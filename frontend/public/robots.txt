@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /messages/
+Disallow: /profile/
+Disallow: /sell/
+Disallow: /settings/
+
+# Allow search engines to crawl important pages
+Allow: /listing/
+Allow: /category/
+Allow: /city/
+Allow: /search
+
+# Sitemap
+Sitemap: https://zedflip.com/api/sitemap.xml
+
+# Crawl-delay for politeness
+Crawl-delay: 1

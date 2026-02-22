@@ -1,0 +1,42 @@
+import { Routes, Route } from 'react-router-dom';
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+import Home from './pages/Home';
+import ListingDetail from './pages/ListingDetail';
+import CreateListing from './pages/CreateListing';
+import Search from './pages/Search';
+import Messages from './pages/Messages';
+import Profile from './pages/Profile';
+import Login from './pages/Login';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminUsers from './pages/admin/Users';
+import AdminListings from './pages/admin/Listings';
+import AdminCategories from './pages/admin/Categories';
+
+function App() {
+  return (
+    <div className="min-h-screen flex flex-col bg-zed-bg">
+      <Navbar />
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/listing/:id" element={<ListingDetail />} />
+          <Route path="/create" element={<CreateListing />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/login" element={<Login />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/listings" element={<AdminListings />} />
+          <Route path="/admin/categories" element={<AdminCategories />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export default App;

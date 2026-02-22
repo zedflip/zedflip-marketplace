@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ZedFlip Design Tokens */
+:root {
+  --zed-orange: #E85D04;
+  --zed-orange-light: #F48C06;
+  --zed-orange-dark: #DC2F02;
+  
+  --zed-green: #2D6A4F;
+  --zed-green-light: #40916C;
+  --zed-green-dark: #1B4332;
+  
+  --zed-red: #D00000;
+  --zed-yellow: #FFC107;
+  
+  --zed-bg: #F8F9FA;
+  --zed-surface: #FFFFFF;
+  --zed-text: #212529;
+  --zed-text-muted: #6C757D;
+  --zed-border: #DEE2E6;
+  
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--zed-bg);
+  color: var(--zed-text);
+  line-height: 1.6;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--zed-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--zed-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--zed-text-muted);
+}
+
+/* Button Base Styles */
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 inline-flex items-center justify-center gap-2;
+  }
+  
+  .btn-primary {
+    @apply bg-zed-orange text-white hover:bg-zed-orange-dark;
+  }
+  
+  .btn-secondary {
+    @apply bg-zed-green text-white hover:bg-zed-green-dark;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-zed-orange text-zed-orange hover:bg-zed-orange hover:text-white;
+  }
+  
+  .btn-ghost {
+    @apply text-zed-orange hover:bg-zed-orange/10;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-md p-4;
+  }
+  
+  .input {
+    @apply w-full px-4 py-2 border border-zed-border rounded-lg focus:outline-none focus:ring-2 focus:ring-zed-orange focus:border-transparent;
+  }
+}
