@@ -46,10 +46,10 @@ export default defineConfig({
     }
   },
   build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    publicDir: 'public',
     rollupOptions: {
-          outDir: 'dist',
-              emptyOutDir: true,
-                  publicDir: 'public',
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
@@ -61,7 +61,6 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     sourcemap: false
   },
-    base: '/',
-      publicDir: 'public',
-  }
+  base: '/',
+  publicDir: 'public'
 });
