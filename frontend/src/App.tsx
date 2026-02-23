@@ -8,6 +8,7 @@ import Search from './pages/Search';
 import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
+import CityPage from './pages/CityPage';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/Users';
 import AdminListings from './pages/admin/Listings';
@@ -26,6 +27,7 @@ function App() {
           <Route path="/messages" element={<Messages />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/city/:citySlug" element={<CityPage />} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboard />} />

@@ -4,6 +4,7 @@ import { ArrowRight, Smartphone, Car, Shirt, Home as HomeIcon, Sofa, Dumbbell } 
 import { useListingStore } from '../store/listingStore';
 import ListingGrid from '../components/listing/ListingGrid';
 import { ZAMBIA_CITIES } from '../types';
+import SEO from '../components/SEO';
 
 const categories = [
   { name: 'Electronics', slug: 'electronics', icon: Smartphone, color: 'bg-blue-100 text-blue-600' },
@@ -22,8 +23,28 @@ const Home = () => {
     fetchListings({}, 1);
   }, []);
 
+  const homeSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "ZedFlip",
+    "url": "https://zedflip.com",
+    "description": "Zambia's leading online marketplace for buying and selling. Find electronics, vehicles, property, fashion and more across Lusaka, Kitwe, Ndola and all major cities.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://zedflip.com/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  };
+
   return (
     <div>
+      <SEO
+        title="Home"
+        description="Buy and sell anything in Zambia. ZedFlip is the leading online marketplace connecting buyers and sellers across Lusaka, Kitwe, Ndola, and all major Zambian cities. Electronics, vehicles, property, fashion and more."
+        keywords="zambia marketplace, buy sell zambia, online shopping zambia, lusaka classifieds, kitwe marketplace, ndola buy sell, zambian online store"
+        url="https://zedflip.com"
+        schema={homeSchema}
+      />
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-zed-orange to-zed-orange-dark text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
