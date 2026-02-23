@@ -8,11 +8,13 @@ import Search from './pages/Search';
 import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
+import VerifyEmail from './pages/VerifyEmail';
 import CityPage from './pages/CityPage';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/Users';
 import AdminListings from './pages/admin/Listings';
 import AdminCategories from './pages/admin/Categories';
+import VerifyEmail from './pages/VerifyEmail';
 
 function App() {
   return (
@@ -27,6 +29,7 @@ function App() {
           <Route path="/messages" element={<Messages />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/city/:citySlug" element={<CityPage />} />
           
           {/* Admin Routes */}

@@ -3,8 +3,6 @@ import { body } from 'express-validator';
 import {
   register,
   login,
-  verifyEmail,
-  resendVerification,
   getMe,
   updatePassword,
 } from '../controllers/auth.controller';
@@ -42,15 +40,6 @@ const loginValidation = [
   body('password').notEmpty().withMessage('Password is required'),
 ];
 
-const verifyEmailValidation = [
-  body('email').isEmail().withMessage('Please enter a valid email'),
-  body('code').isLength({ min: 6, max: 6 }).withMessage('Verification code must be 6 digits'),
-];
-
-const resendVerificationValidation = [
-  body('email').isEmail().withMessage('Please enter a valid email'),
-];
-
 const passwordValidation = [
   body('currentPassword').notEmpty().withMessage('Current password is required'),
   body('newPassword')
@@ -61,8 +50,6 @@ const passwordValidation = [
 // Routes
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
-router.post('/verify-email', verifyEmailValidation, verifyEmail);
-router.post('/resend-verification', resendVerificationValidation, resendVerification);
 router.get('/me', protect, getMe);
 router.put('/password', protect, passwordValidation, updatePassword);
 

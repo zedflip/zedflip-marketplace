@@ -11,6 +11,9 @@ export interface IUser extends Document {
   city: string;
   bio?: string;
   isVerified: boolean;
+  isEmailVerified: boolean;
+  emailVerificationCode?: string;
+  emailVerificationExpires?: Date;
   isAdmin: boolean;
   isBanned: boolean;
   rating: number;

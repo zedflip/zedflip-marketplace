@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { ZAMBIA_CITIES } from '../types';
 import { cn } from '../lib/utils';
+import { toast } from 'react-hot-toast';
 
 const Login = () => {
+  const location = useLocation();
+
   const [searchParams] = useSearchParams();
   const [isRegister, setIsRegister] = useState(searchParams.get('register') === 'true');
   const [showPassword, setShowPassword] = useState(false);
@@ -22,6 +25,14 @@ const Login = () => {
     phone: '+260', // Pre-fill with Zambia prefix
     password: '',
     confirmPassword: '',
+
+  // Show success message if coming from verification
+  useEffect(() => {
+    if (location.state?.verified) {
+      toast.success('Email verified successfully! You can now login.');
+    }
+  }, [location]);
+
     city: '',
   });
 
@@ -89,13 +100,27 @@ const Login = () => {
           password: formData.password,
           city: formData.city,
         });
+
+        // Redirect to verification page after successful registration
+        toast.success('Registration successful! Please verify your email.');
+        navigate('/verify-email', { state: { email: formData.email } });
       } else {
         await login(formData.email, formData.password);
+        navigate('/');
       }
-
-      navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'An error occurred');
+      const errorMessage = err.response?.data?.message || 'An error occurred';
+      
+      // Check if error is due to unverified email
+      if (err.response?.status === 403 && errorMessage.includes('verify')) {
+        setError(errorMessage);
+        toast.error(errorMessage, { duration: 5000 });
+        setTimeout(() => {
+          navigate('/verify-email', { state: { email: formData.email } });
+        }, 2000);
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
