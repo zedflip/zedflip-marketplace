@@ -19,7 +19,7 @@ const Login = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
+    phone: '+260', // Pre-fill with Zambia prefix
     password: '',
     confirmPassword: '',
     city: '',
@@ -32,7 +32,33 @@ const Login = () => {
   }, [isAuthenticated, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Special handling for phone input to lock +260 prefix
+    if (name === 'phone') {
+      // Always ensure the value starts with +260
+      let phoneValue = value;
+      
+      // If user tries to delete the prefix, restore it
+      if (!phoneValue.startsWith('+260')) {
+        phoneValue = '+260';
+      }
+      
+      // Only allow numbers after +260
+      const prefix = '+260';
+      const numbers = phoneValue.slice(prefix.length).replace(/\D/g, '');
+      phoneValue = prefix + numbers;
+      
+      // Limit to 9 digits after +260 (total 13 characters)
+      if (numbers.length > 9) {
+        phoneValue = prefix + numbers.slice(0, 9);
+      }
+      
+      setFormData({ ...formData, [name]: phoneValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+    
     setError('');
   };
 
@@ -170,12 +196,18 @@ const Login = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
+                    onFocus={(e) => {
+                      // Ensure +260 prefix is always present when focused
+                      if (!e.target.value || e.target.value === '') {
+                        setFormData({ ...formData, phone: '+260' });
+                      }
+                    }}
                     required
                     className="input"
                     placeholder="+260971234567"
                   />
                   <p className="text-xs text-zed-text-muted mt-1">
-                    Format: +260XXXXXXXXX
+                    Format: +260XXXXXXXXX (Zambia only)
                   </p>
                 </div>
 
