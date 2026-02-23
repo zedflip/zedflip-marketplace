@@ -4,9 +4,6 @@ import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
 export default defineConfig({
-  esbuild: {
-    logOverride: { 'this-is-undefined-in-esm': 'silent' }
-  },
   plugins: [
     react(),
     VitePWA({
@@ -49,9 +46,10 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'dist',
-    emptyOutDir: true,
     rollupOptions: {
+          outDir: 'dist',
+              emptyOutDir: true,
+                  publicDir: 'public',
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
@@ -63,5 +61,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     sourcemap: false
   },
-  base: '/'
+    base: '/',
+      publicDir: 'public',
+  }
 });
