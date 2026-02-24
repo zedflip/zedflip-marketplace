@@ -1,346 +1,279 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, Link, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Phone, Lock, Loader2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { ZAMBIA_CITIES } from '../types';
-import { cn } from '../lib/utils';
-import { toast } from 'react-hot-toast';
+import toast from 'react-hot-toast';
+import SEO from '../components/SEO';
 
 const Login = () => {
-  const location = useLocation();
-
-  const [searchParams] = useSearchParams();
-  const [isRegister, setIsRegister] = useState(searchParams.get('register') === 'true');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const { login, register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-
-  // Form state
+  const location = useLocation();
+  const { login, register, isLoading } = useAuth();
+  const [isLoginMode, setIsLoginMode] = useState(true);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '+260', // Pre-fill with Zambia prefix
+    phone: '',
     password: '',
-    confirmPassword: '',
+    fullName: '',
+    email: '',
+    city: '',
+  });
 
   // Show success message if coming from verification
   useEffect(() => {
     if (location.state?.verified) {
       toast.success('Email verified successfully! You can now login.');
+      // Clear the state
+      window.history.replaceState({}, document.title);
     }
   }, [location]);
 
-    city: '',
-  });
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
-    }
-  }, [isAuthenticated, navigate]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    
-    // Special handling for phone input to lock +260 prefix
-    if (name === 'phone') {
-      // Always ensure the value starts with +260
-      let phoneValue = value;
-      
-      // If user tries to delete the prefix, restore it
-      if (!phoneValue.startsWith('+260')) {
-        phoneValue = '+260';
-      }
-      
-      // Only allow numbers after +260
-      const prefix = '+260';
-      const numbers = phoneValue.slice(prefix.length).replace(/\D/g, '');
-      phoneValue = prefix + numbers;
-      
-      // Limit to 9 digits after +260 (total 13 characters)
-      if (numbers.length > 9) {
-        phoneValue = prefix + numbers.slice(0, 9);
-      }
-      
-      setFormData({ ...formData, [name]: phoneValue });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-    
-    setError('');
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 9) value = value.slice(0, 9);
+    setFormData({ ...formData, phone: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
+
+    const fullPhone = `+260${formData.phone}`;
+
+    if (formData.phone.length !== 9) {
+      toast.error('Phone number must be 9 digits');
+      return;
+    }
 
     try {
-      if (isRegister) {
-        // Validation
-        if (formData.password !== formData.confirmPassword) {
-          setError('Passwords do not match');
-          setIsLoading(false);
+      if (isLoginMode) {
+        await login(fullPhone, formData.password);
+        toast.success('Login successful!');
+        navigate('/');
+      } else {
+        if (!formData.fullName || !formData.email || !formData.city) {
+          toast.error('Please fill in all fields');
           return;
         }
-
-        if (!formData.phone.match(/^\+260[0-9]{9}$/)) {
-          setError('Please enter a valid Zambian phone number (+260XXXXXXXXX)');
-          setIsLoading(false);
-          return;
-        }
-
         await register({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
+          phone: fullPhone,
           password: formData.password,
+          fullName: formData.fullName,
+          email: formData.email,
           city: formData.city,
         });
-
-        // Redirect to verification page after successful registration
-        toast.success('Registration successful! Please verify your email.');
+        // Store email for verification page
+        localStorage.setItem('verificationEmail', formData.email);
+        toast.success('Registration successful! Please check your email for verification code.');
+        navigate('/verify-email', { state: { email: formData.email } });
+      }
+    } catch (error: any) {
+      // Handle unverified email error
+      if (error.response?.status === 403 && error.response?.data?.message?.includes('verify')) {
+        toast.error('Please verify your email before logging in');
+        localStorage.setItem('verificationEmail', formData.email || '');
         navigate('/verify-email', { state: { email: formData.email } });
       } else {
-        await login(formData.email, formData.password);
-        navigate('/');
+        toast.error(error.response?.data?.message || 'An error occurred');
       }
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'An error occurred';
-      
-      // Check if error is due to unverified email
-      if (err.response?.status === 403 && errorMessage.includes('verify')) {
-        setError(errorMessage);
-        toast.error(errorMessage, { duration: 5000 });
-        setTimeout(() => {
-          navigate('/verify-email', { state: { email: formData.email } });
-        }, 2000);
-      } else {
-        setError(errorMessage);
-      }
-    } finally {
-      setIsLoading(false);
     }
   };
 
+  const zambiaCities = [
+    'Lusaka', 'Kitwe', 'Ndola', 'Kabwe', 'Chingola', 'Mufulira', 'Livingstone',
+    'Luanshya', 'Kasama', 'Chipata', 'Solwezi', 'Mongu', 'Mazabuka', 'Choma'
+  ];
+
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <SEO
+        title={isLoginMode ? 'Login' : 'Register'}
+        description={isLoginMode ? 'Login to your ZedFlip account' : 'Create a ZedFlip account'}
+      />
+      
+      <div className="max-w-md w-full">
+        {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2">
-            <div className="w-12 h-12 bg-zed-orange rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-2xl">Z</span>
-            </div>
-            <span className="text-2xl font-bold text-zed-text">
-              Zed<span className="text-zed-orange">Flip</span>
-            </span>
+          <Link to="/" className="inline-block">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-zed-orange to-zed-orange-dark bg-clip-text text-transparent">
+              ZedFlip
+            </h1>
           </Link>
+          <p className="mt-2 text-gray-600">
+            {isLoginMode ? 'Welcome back!' : 'Join Zambia\'s marketplace'}
+          </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          {/* Tabs */}
-          <div className="flex mb-6">
-            <button
-              onClick={() => setIsRegister(false)}
-              className={cn(
-                'flex-1 py-2 text-center font-medium border-b-2 transition-colors',
-                !isRegister
-                  ? 'border-zed-orange text-zed-orange'
-                  : 'border-transparent text-zed-text-muted hover:text-zed-text'
-              )}
-            >
-              Login
-            </button>
-            <button
-              onClick={() => setIsRegister(true)}
-              className={cn(
-                'flex-1 py-2 text-center font-medium border-b-2 transition-colors',
-                isRegister
-                  ? 'border-zed-orange text-zed-orange'
-                  : 'border-transparent text-zed-text-muted hover:text-zed-text'
-              )}
-            >
-              Sign Up
-            </button>
+        {/* Main Card - Yango Style */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-zed-text">
+              {isLoginMode ? 'Login' : 'Create Account'}
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {isLoginMode ? 'Enter your details to continue' : 'Fill in your information to get started'}
+            </p>
           </div>
 
-          {/* Error */}
-          {error && (
-            <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {isRegister && (
-              <div>
-                <label className="block text-sm font-medium text-zed-text mb-1">
-                  Full Name
-                </label>
+            {/* Phone Input - Fixed +260 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Phone className="h-5 w-5 text-gray-400" />
+                </div>
+                <div className="absolute inset-y-0 left-12 flex items-center pointer-events-none">
+                  <span className="text-gray-700 font-medium">+260</span>
+                </div>
                 <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handlePhoneChange}
+                  placeholder="97 123 4567"
+                  className="block w-full pl-24 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-zed-orange focus:border-transparent transition-all"
                   required
-                  className="input"
-                  placeholder="John Doe"
                 />
               </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-zed-text mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="input"
-                placeholder="you@example.com"
-              />
+              <p className="mt-1 text-xs text-gray-500">9 digits (Zambian format)</p>
             </div>
 
-            {isRegister && (
+            {/* Register Fields */}
+            {!isLoginMode && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-zed-text mb-1">
-                    Phone Number
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name
                   </label>
                   <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    onFocus={(e) => {
-                      // Ensure +260 prefix is always present when focused
-                      if (!e.target.value || e.target.value === '') {
-                        setFormData({ ...formData, phone: '+260' });
-                      }
-                    }}
-                    required
-                    className="input"
-                    placeholder="+260971234567"
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    placeholder="John Mwansa"
+                    className="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-zed-orange focus:border-transparent transition-all"
+                    required={!isLoginMode}
                   />
-                  <p className="text-xs text-zed-text-muted mt-1">
-                    Format: +260XXXXXXXXX (Zambia only)
-                  </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-zed-text mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="john@example.com"
+                    className="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-zed-orange focus:border-transparent transition-all"
+                    required={!isLoginMode}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     City
                   </label>
                   <select
-                    name="city"
                     value={formData.city}
-                    onChange={handleChange}
-                    required
-                    className="input"
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    className="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-zed-orange focus:border-transparent transition-all"
+                    required={!isLoginMode}
                   >
                     <option value="">Select your city</option>
-                    {ZAMBIA_CITIES.map((city) => (
-                      <option key={city} value={city}>
-                        {city}
-                      </option>
+                    {zambiaCities.map((city) => (
+                      <option key={city} value={city}>{city}</option>
                     ))}
                   </select>
                 </div>
               </>
             )}
 
+            {/* Password Input */}
             <div>
-              <label className="block text-sm font-medium text-zed-text mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  minLength={6}
-                  className="input pr-10"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zed-text-muted"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {isRegister && (
-              <div>
-                <label className="block text-sm font-medium text-zed-text mb-1">
-                  Confirm Password
-                </label>
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                </div>
                 <input
                   type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Enter your password"
+                  className="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-zed-orange focus:border-transparent transition-all"
                   required
                   minLength={6}
-                  className="input"
-                  placeholder="••••••••"
                 />
               </div>
-            )}
+              {!isLoginMode && (
+                <p className="mt-1 text-xs text-gray-500">At least 6 characters</p>
+              )}
+            </div>
 
-            {!isRegister && (
-              <div className="text-right">
-                <a href="#" className="text-sm text-zed-orange hover:underline">
-                  Forgot password?
-                </a>
-              </div>
-            )}
-
+            {/* Submit Button - Yango Style Gradient */}
             <button
               type="submit"
               disabled={isLoading}
-              className="btn btn-primary w-full py-3"
+              className="w-full bg-gradient-to-r from-zed-orange to-zed-orange-dark text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : isRegister ? (
-                'Create Account'
+                <>
+                  <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                  {isLoginMode ? 'Logging in...' : 'Creating account...'}
+                </>
               ) : (
-                'Login'
+                isLoginMode ? 'Continue' : 'Create Account'
               )}
             </button>
           </form>
 
-          {/* Terms */}
-          {isRegister && (
-            <p className="text-xs text-zed-text-muted text-center mt-4">
-              By signing up, you agree to our{' '}
-              <a href="#" className="text-zed-orange hover:underline">
-                Terms of Service
-              </a>{' '}
-              and{' '}
-              <a href="#" className="text-zed-orange hover:underline">
-                Privacy Policy
-              </a>
-            </p>
+          {/* Toggle Mode */}
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => setIsLoginMode(!isLoginMode)}
+              className="text-sm text-gray-600 hover:text-zed-orange transition-colors"
+            >
+              {isLoginMode ? (
+                <>
+                  Don't have an account?{' '}
+                  <span className="font-semibold text-zed-orange">Register</span>
+                </>
+              ) : (
+                <>
+                  Already have an account?{' '}
+                  <span className="font-semibold text-zed-orange">Login</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Forgot Password */}
+          {isLoginMode && (
+            <div className="mt-4 text-center">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-gray-500 hover:text-zed-orange transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
           )}
+        </div>
+
+        {/* Additional Info */}
+        <div className="mt-6 text-center text-sm text-gray-500">
+          <p>
+            By continuing, you agree to ZedFlip's{' '}
+            <Link to="/terms" className="text-zed-orange hover:underline">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link to="/privacy" className="text-zed-orange hover:underline">
+              Privacy Policy
+            </Link>
+          </p>
         </div>
       </div>
     </div>

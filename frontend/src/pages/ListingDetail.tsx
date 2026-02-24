@@ -67,7 +67,12 @@ const ListingDetail = () => {
       </button>
 
       {/* Listing Detail */}
-      <ListingDetailComponent listing={listing} onContact={handleContact} />
+      <ListingDetailComponent 
+        listing={listing} 
+        onContact={handleContact}
+        isContactLoading={isStartingChat}
+        isAuthenticated={isAuthenticated}
+      />
 
       {/* Related Listings */}
       {relatedListings.length > 0 && (
