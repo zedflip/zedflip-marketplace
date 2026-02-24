@@ -44,7 +44,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     // Send verification email
     try {
-      await sendVerificationEmail(email, verificationCode);
+      await sendVerificationEmail(email, name, verificationCode);
       console.log(`Verification email sent to ${email} with code ${verificationCode}`);
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
@@ -183,8 +183,8 @@ export const resendVerification = async (req: Request, res: Response): Promise<v
 
     // Send verification email
     try {
-      await cd backend && git add . && git commit -m "fix: Remove extra name argument from sendVerificationEmail" && git push
-      git add . && git commit -m "fix: Remove extra name argument" &&ationEmail(email, verificationCode);
+            await sendVerificationEmail(email, verificationCode);
+      (email, verificationCode);
       console.log(`Verification email resent to ${email} with code ${verificationCode}`);
     } catch (emailError) {
       console.error('Failed to resend verification email:', emailError);
