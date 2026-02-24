@@ -266,7 +266,7 @@ const ListingDetail = ({ listing, onContact, isContactLoading, isAuthenticated =
 
             {/* Contact Buttons - Yango Style */}
             <div className="space-y-3">
-              {!isAuthenticated ? (
+              {(!isAuthenticated || isLoading) ? (
                 /* Guest View - Login Required */
                 <div className="space-y-3">
                   <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-4 text-center">
